@@ -79,7 +79,9 @@ makeopts="-j 2"
 
 # if this is set, as many programs will be compiled in debug mode as possible
 debugmode=1
-
+#if this is set then a tar.bz2 file is made containing the minimal files required to run
+#currently only supports mokka and its dependancies
+pack=0
 
 ######################
 # helper routines
@@ -97,6 +99,11 @@ def set_environment(key, value, writeout=1):
         env.close()
         env=open(ilcbasedir+"/"+setupfile+".csh","a")
         env.write("setenv %s %s\n"%(key,value))
+        if pack:
+            value = value.replace(ilcbasedir,"$PWD")
+            env=open(ilcbasedir+"/pack_"+setupfile+".sh","a")
+            env.write("export %s=%s\n"%(key,value))
+            env.close()
 
 def exe(prefix,workdir,command,failmessage=""):
     # if a working directory is specified, make sure it exists
@@ -1106,3 +1113,40 @@ for package in order:
         except KeyError:
             log("ERROR: no installation instructions for "+package)
             sys.exit(1)
+   
+if pack:
+    log("packing up the following files:")
+    #build a list of the files we need - currently only supports mokka + dependancies
+    exes = os.popen('find . -perm -u+x ! -type d ! -name "*.*" | grep "bin" | grep "mokka"')
+    exes = [line.strip() for line in exes.readlines()]
+    #Get the shared libs that the exes need:
+    if not os.path.isdir("pack_lib"):
+        os.mkdir("pack_lib")
+    all_libs = []
+    for exe in exes:
+        libs = os.popen('ldd '+exe+' | grep  "clhep\|lcio\|gear"')
+        libs = [line.strip() for line in libs.readlines()]
+        libs = [lib.split(" ")[-2] for lib in libs]
+        for lib in libs: all_libs.append(lib)
+    all_libs = set(all_libs)
+    for lib in all_libs: shutil.copy(lib,"pack_lib")
+    [log(f) for f in all_libs]
+    libs = ["pack_lib"]
+    #Setup should add this path
+    env=open(ilcbasedir+"/pack_"+setupfile+".sh","a")
+    env.write("export LD_LIBRARY_PATH=$PWD/pack_lib:$LD_LIBRARY_PATH")
+    env.close()
+    data = os.popen('find . -name "Photon*" | grep "geant"')
+    data = [line.strip() for line in data.readlines()]
+    setup = ["pack_ilcsetup.sh"]
+    files = libs+exes+data+setup
+    [log(f) for f in files]
+    #now make a tar of all that we need 
+    s_files = ""
+    for f in files:
+        s_files = s_files+f+" " 
+    os.popen('tar cjf ilcpack.tar.bz2 '+s_files)
+    log("To deploy run:")
+    log("tar jxf ilcpack.tar.bz2")
+    log(". ./pack_ilcsetup.sh")
+    
