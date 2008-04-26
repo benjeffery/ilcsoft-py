@@ -1101,61 +1101,8 @@ for package in order:
         else:
             log("setting up package "+package+", version "+version)
         # call dedicated installation routine.
-        # this looks spaghetti-ish, but I think we do need this
-        if package=="cmakemods":
-            install_cmakemods(version,doit)
-        elif package=="pythia":
-            install_pythia(version,doit)
-        elif package=="cmake":
-            install_cmake(version,doit)
-        elif package=="maven":
-            install_maven(version,doit)
-        elif package=="ccvssh":
-            install_ccvssh(version,doit)
-        elif package=="clhep":
-            install_clhep(version,doit)
-        elif package=="jaida":
-            install_jaida(version,doit)
-        elif package=="aidajni":
-            install_aidajni_source(version,doit)
-        elif package=="lcio":
-            install_lcio(version,doit)
-        elif package=="root":
-            install_root(version,doit)
-        elif package=="raida":
-            install_raida(version,doit)
-        elif package=="gear":
-            install_gear(version,doit)
-        elif package=="geant":
-            install_geant(version,doit)
-        elif package=="mokka":
-            install_mokka(version,doit)
-        elif package=="gsl":
-            install_gsl(version,doit)
-        elif package=="heppdt":
-            install_heppdt(version,doit)
-        elif package=="marlin":
-            install_marlin(version,doit)
-        elif package=="marlinutil":
-            install_marlinutil(version,doit)
-        elif package=="boost":
-            install_boost(version,doit)
-        elif package=="lapack":
-            install_lapack(version,doit)
-        elif package=="cernlib":
-            install_cernlib(version,doit)
-        elif package=="marlinreco":
-            install_marlinreco(version,doit)
-        elif package=="sidigi":
-            install_sidigi(version,doit)
-        elif package=="ced":
-            install_ced(version,doit)
-        elif package=="lcfivertex":
-            install_lcfivertex(version,doit)
-        elif package=="pandorapfa":
-            install_pandorapfa(version,doit)
-        elif package=="jas3":
-            install_jas3(version,doit)
-        else:
+        try:
+            locals()["install_"+package](version,doit)
+        except KeyError:
             log("ERROR: no installation instructions for "+package)
             sys.exit(1)
