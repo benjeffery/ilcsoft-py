@@ -1000,7 +1000,7 @@ def install_swig(vesion,doit):
     exe(id,workdir,"make "+makeopts)
     exe(id,workdir,"make install")
 
-def install_python(vesion,doit):
+def install_python(version,doit):
     id="python-"+version
     workdir=ilcbasedir+"/"+id
     set_environment("PATH",workdir+"/bin:${PATH}")
