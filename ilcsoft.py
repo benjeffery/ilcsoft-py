@@ -59,6 +59,7 @@ install["pandorapfa"]=["v02-00-01"]
 install["jas3"]      =["0.8.4rc3"]
 install["python"]     =["2.5.2"]
 install["swig"]     =["1.3.34"]
+install["lciopython"]     =["NA"]
 
 
 # installation order - don't touch this, even when not installing some of these
@@ -66,7 +67,7 @@ order = ["ccvssh","cmakemods","pythia","cmake","maven","clhep",\
          "jaida","aidajni","lcio","root","raida",\
          "gear","geant","mokka","gsl","heppdt","lapack","cernlib",\
          "marlin","marlinutil","boost","marlinreco","sidigi","ced",\
-         "lcfivertex","pandorapfa","jas3","python","swig"]
+         "lcfivertex","pandorapfa","jas3","python","swig","lciopython"]
 
 ######################
 # installation options
@@ -1010,6 +1011,21 @@ def install_python(version,doit):
     wget(id,tardir,"http://www.python.org/ftp/python/"+version+"/Python-"+version+".tar.bz2")
     exe(id,ilcbasedir,"tar jxf "+tardir+"/Python-"+version+".tar.bz2")
     exe(id,ilcbasedir,"mv Python-"+version+" python-"+version)
+    
+def install_lciopython(version,doit):
+    #get the lcio location
+    try:
+        version = install["lcio"]
+    except KeyError:
+        version = skip["lcio"]
+    lcio = ilcbasedir+"/lcio-"+version+"/src/python"
+    set_environment("PYTHONPATH",+lcio+":${PATH}")
+    if not doit: return
+    
+    #get fixed swig code
+    exe(id,lcio,"rm -rf lcio_swig.i")
+    wget(id,lcio,"http://www-pnp.physics.ox.ac.uk/~jeffery/lcioswig/"+version+"/lcio_swig.i")
+    exe(id,ilcbasedir,"make")
     
 #####################
 # general checks
