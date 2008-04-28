@@ -989,6 +989,7 @@ def install_swig(vesion,doit):
     id="swig-"+version
     workdir=ilcbasedir+"/"+id
     set_environment("PATH",workdir+"/bin:${PATH}")
+    if not doit: return
     #get code
     exe(id,ilcbasedir,"rm -rf "+workdir)
     wget(id,tardir,"http://heanet.dl.sourceforge.net/sourceforge/swig/"+id+".tar.gz")
