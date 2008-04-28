@@ -57,6 +57,7 @@ install["ced"]       =["v00-03"]
 install["lcfivertex"]=["HEAD"]  # RPCutProcessor fixes
 install["pandorapfa"]=["v02-00-01"]
 install["jas3"]      =["0.8.4rc3"]
+install["swig"]     =["1.3.34"]
 
 
 # installation order - don't touch this, even when not installing some of these
@@ -64,7 +65,7 @@ order = ["ccvssh","cmakemods","pythia","cmake","maven","clhep",\
          "jaida","aidajni","lcio","root","raida",\
          "gear","geant","mokka","gsl","heppdt","lapack","cernlib",\
          "marlin","marlinutil","boost","marlinreco","sidigi","ced",\
-         "lcfivertex","pandorapfa","jas3"]
+         "lcfivertex","pandorapfa","jas3","swig"]
 
 ######################
 # installation options
@@ -983,7 +984,19 @@ def install_jas3(version,doit):
          +"/jas3-Linux-"+version+".tar.gz",id+".tgz")
     exe(id,ilcbasedir,"tar zxf "+tardir+"/"+id+".tgz")
 
+def install_swig(vesion,doit):
+    id="swig-"+version
+    workdir=ilcbasedir+"/"+id
+    set_environment("PATH",workdir+"/bin:${PATH}")
+    #get code
+    exe(id,ilcbasedir,"rm -rf "+workdir)
+    wget(id,tardir,"http://heanet.dl.sourceforge.net/sourceforge/swig/"+id+".tar.gz")
+    exe(id,ilcbasedir,"tar zxf "+tardir+"/"+id+".tar.gz")
 
+    # build
+    exe(id,workdir,"./configure --prefix="+workdir)
+    exe(id,workdir,"make "+makeopts)
+    exe(id,workdir,"make install")
 
 #####################
 # general checks
