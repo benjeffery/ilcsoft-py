@@ -57,6 +57,7 @@ install["ced"]       =["v00-03"]
 install["lcfivertex"]=["HEAD"]  # RPCutProcessor fixes
 install["pandorapfa"]=["v02-00-01"]
 install["jas3"]      =["0.8.4rc3"]
+install["python"]     =["2.5.2"]
 install["swig"]     =["1.3.34"]
 
 
@@ -65,7 +66,7 @@ order = ["ccvssh","cmakemods","pythia","cmake","maven","clhep",\
          "jaida","aidajni","lcio","root","raida",\
          "gear","geant","mokka","gsl","heppdt","lapack","cernlib",\
          "marlin","marlinutil","boost","marlinreco","sidigi","ced",\
-         "lcfivertex","pandorapfa","jas3","swig"]
+         "lcfivertex","pandorapfa","jas3","python","swig"]
 
 ######################
 # installation options
@@ -998,6 +999,17 @@ def install_swig(vesion,doit):
     exe(id,workdir,"make "+makeopts)
     exe(id,workdir,"make install")
 
+def install_python(vesion,doit):
+    id="python-"+version
+    workdir=ilcbasedir+"/"+id
+    set_environment("PATH",workdir+"/bin:${PATH}")
+    if not doit: return
+    #get code
+    exe(id,ilcbasedir,"rm -rf "+workdir)
+    wget(id,tardir,"http://www.python.org/ftp/python/"+version+"/Python-"+version+".tar.bz2")
+    exe(id,ilcbasedir,"tar jxf "+tardir+"/Python-"+version+".tar.bz2")
+    exe(id,ilcbasedir,"mv Python-"+version+" python-"+version)
+    
 #####################
 # general checks
 ######################
