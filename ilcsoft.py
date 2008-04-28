@@ -30,6 +30,8 @@ import os,sys,time
 install = {}
 skip    = {}
 #
+install["python"]    =["2.5.2"]
+install["swig"]      =["1.3.34"]
 install["cmakemods"] =["v01-05-01"]
 install["pythia"]    =["6.4.10"]
 install["ccvssh"]    =["0.9.1-mod"]
@@ -57,17 +59,14 @@ install["ced"]       =["v00-03"]
 install["lcfivertex"]=["HEAD"]  # RPCutProcessor fixes
 install["pandorapfa"]=["v02-00-01"]
 install["jas3"]      =["0.8.4rc3"]
-install["python"]     =["2.5.2"]
-install["swig"]     =["1.3.34"]
-install["lciopython"]     =["NA"]
 
 
 # installation order - don't touch this, even when not installing some of these
-order = ["ccvssh","cmakemods","pythia","cmake","maven","clhep",\
+order = ["python","swig","ccvssh","cmakemods","pythia","cmake","maven","clhep",\
          "jaida","aidajni","lcio","root","raida",\
          "gear","geant","mokka","gsl","heppdt","lapack","cernlib",\
          "marlin","marlinutil","boost","marlinreco","sidigi","ced",\
-         "lcfivertex","pandorapfa","jas3","python","swig","lciopython"]
+         "lcfivertex","pandorapfa","jas3"]
 
 ######################
 # installation options
@@ -76,6 +75,7 @@ order = ["ccvssh","cmakemods","pythia","cmake","maven","clhep",\
 ilcbasedir="/ilc"
 tardir=ilcbasedir+"/tarfiles"
 USE_RAIDA=1
+python_bindings = True
 setupfile="ilcsetup"
 arch="Linux-g++"
 makeopts="-j 2"
@@ -469,6 +469,8 @@ def install_lcio(version,doit):
     set_environment("LCIO_HOME",workdir)
     set_environment("PATH","${PATH}:"+workdir+"/bin")
     set_environment("LD_LIBRARY_PATH","${LD_LIBRARY_PATH}:"+workdir+"/lib")
+    if python_bindings:
+        set_environment("PYTHONPATH",workdir+"/src/python:${PYTHONPATH}")
     if not doit: return
 
     # get code
@@ -481,6 +483,13 @@ def install_lcio(version,doit):
     exe(id,workdir,"${CMAKE} .")
     exe(id,workdir,"make install -f Makefile")
 
+    #build python bindings
+    if python_bindings:
+        lciopy = workdir+"/src/python"
+        #get fixed swig code
+        exe(id,lciopy,"rm -rf lcio_swig.i")
+        wget(id,lciopy,"http://www-pnp.physics.ox.ac.uk/~jeffery/lcioswig/"+version+"/lcio_swig.i")
+        exe(id,lciopy,"make")
 
 def install_root(version,doit):
 
@@ -1012,20 +1021,10 @@ def install_python(version,doit):
     exe(id,ilcbasedir,"tar jxf "+tardir+"/Python-"+version+".tar.bz2")
     exe(id,ilcbasedir,"mv Python-"+version+" python-"+version)
     
-def install_lciopython(version,doit):
-    #get the lcio location
-    try:
-        version = install["lcio"]
-    except KeyError:
-        version = skip["lcio"]
-    lcio = ilcbasedir+"/lcio-"+version+"/src/python"
-    set_environment("PYTHONPATH",+lcio+":${PATH}")
-    if not doit: return
-    
-    #get fixed swig code
-    exe(id,lcio,"rm -rf lcio_swig.i")
-    wget(id,lcio,"http://www-pnp.physics.ox.ac.uk/~jeffery/lcioswig/"+version+"/lcio_swig.i")
-    exe(id,ilcbasedir,"make")
+    # build
+    exe(id,workdir,"./configure --prefix="+workdir)
+    exe(id,workdir,"make "+makeopts)
+    exe(id,workdir,"make install")
     
 #####################
 # general checks
