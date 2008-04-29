@@ -498,18 +498,30 @@ def install_root(version,doit):
     set_environment("ROOTSYS",workdir)
     set_environment("PATH","${PATH}:"+workdir+"/bin")
     set_environment("LD_LIBRARY_PATH","${LD_LIBRARY_PATH}:${ROOTSYS}/lib")
-    set_environment("PYTHONPATH","${PYTHONPATH}:${ROOTSYS}/pyroot")
+    if python_bindings:
+         set_environment("PYTHONPATH","${PYTHONPATH}:${ROOTSYS}/pyroot:${ROOTSYS}/lib")
     if not doit: return
-
+    
     # get code
     id="root-"+version
     wget(id,tardir,"ftp://root.cern.ch/root/root_"+version+".source.tar.gz")
     exe(id,ilcbasedir,"tar zxf "+tardir+"/root_"+version+".source.tar.gz")
     exe(id,ilcbasedir,"rm -rf "+workdir)
     exe(id,ilcbasedir,"mv root "+workdir)
-
+    
     # build
-    exe(id,workdir,"./configure --enable-python --enable-roofit --disable-cern")
+    if python_bindings:
+        #get python directory
+        try:
+            pyversion = install["python"][-1]
+        except KeyError:
+            pyversion = skip["python"][-1]
+        pydir = ilcbasedir + "/python-"+pyversion
+        exe(id,workdir,"./configure --enable-python --with-python-incdir="+pydir+"/include"+
+        " --with-python-libdir="+pydir+
+        " --enable-roofit --disable-cern")
+    else:
+        exe(id,workdir,"./configure --enable-roofit --disable-cern")
     exe(id,workdir,"gmake "+makeopts)
     exe(id,workdir,"gmake cintdlls "+makeopts)
     exe(id,workdir,"gmake install")
